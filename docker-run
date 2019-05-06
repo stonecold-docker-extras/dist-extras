@@ -33,8 +33,7 @@ else
 	#RUN_USER_SHELL=$(getent passwd ${RUN_USER_NAME} | cut -d ':' -f 7)
 	#exec su-exec ${RUN_USER_NAME} ${RUN_USER_SHELL} --login
 
-	#RUN_USER_SHELL=$(getent passwd root | cut -d ':' -f 7)
-	RUN_USER_SHELL=$(grep "^root:" | cut -d ':' -f 7)
+	RUN_USER_SHELL=$(grep "^root:" /etc/passwd | cut -d ':' -f 7)
 	exec ${RUN_USER_SHELL} --login
 fi
 
