@@ -1,0 +1,21 @@
+#!/bin/sh
+
+while [[ ${#} > 0 ]]
+do
+	case "${1}" in
+		goreman)
+			URL=""
+			if [ -e /lib/ld-musl-x86_64.so.1 ]; then
+				URL=https://bitbucket.org/forumi0721/docker-dist-files/raw/d04fee6b6d51fd3a51a15f4df01b9ff189763eb1/extra/goreman-musl-aarch64
+			fi
+			;;
+		gosu)
+			;;
+		su-exec)
+			;;
+	   	*) 
+			echo "Unknown tool : ${1}"
+			;;
+	esac
+	shift
+done
