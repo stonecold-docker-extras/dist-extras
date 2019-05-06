@@ -21,8 +21,71 @@ fn_install() {
 	apk add $@
 }
 
-fn_del() {
+fn_delete() {
 	apk del $@ --purge
+}
+
+fn_install_custom() {
+	if [ "${PACKAGE_GOREMAN}" = "Y" ]; then
+		local URL=""
+		if [ -e /lib/ld-musl-x86_64.so.1 ]; then
+			URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/goreman-musl-x64
+		elif [ -e /lib/ld-musl-aarch64.so.1 ]; then
+			URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/goreman-musl-aarch64
+		elif [ -e /lib/ld-musl-armhf.so.1 ]; then
+			URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/goreman-musl-armv7h
+		elif [ -e /lib64/ld-linux-x86-64.so.2 ]; then
+			URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/goreman-glibc-x64
+		elif [ -e /lib/ld-linux-aarch64.so.1 ]; then
+			URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/goreman-glibc-aarch64
+		elif [ -e /lib/ld-linux-armhf.so.3 ]; then
+			URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/goreman-glibc-armv7h
+		fi
+		wget --no-check-certificate "${URL}" -o /usr/local/bin/goreman
+		chmod 755 /usr/local/bin/goreman
+	fi
+	if [ "${PACKAGE_GOSU}" = "Y" ]; then
+		local URL=""
+		if [ -e /lib/ld-musl-x86_64.so.1 -o -e /lib64/ld-linux-x86-64.so.2 ]; then
+			URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/gosu-amd64
+		elif [ -e /lib/ld-musl-aarch64.so.1 -o -e /lib/ld-linux-aarch64.so.1 ]; then
+			URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/gosu-arm64
+		elif [ -e /lib/ld-musl-armhf.so.1 -o -e /lib/ld-linux-armhf.so.3 ]; then
+			URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/gosu-armhf
+		fi
+		wget --no-check-certificate "${URL}" -o /usr/local/bin/gosu
+		chmod 755 /usr/local/bin/gosu
+	fi
+	if [ "${PACKAGE_SUEXEC}" = "Y" ]; then
+		local URL=""
+		if [ -e /lib/ld-musl-x86_64.so.1 ]; then
+			URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/su-exec-musl-x64
+		elif [ -e /lib/ld-musl-aarch64.so.1 ]; then
+			URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/su-exec-musl-aarch64
+		elif [ -e /lib/ld-musl-armhf.so.1 ]; then
+			URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/su-exec-musl-armv7h
+		elif [ -e /lib64/ld-linux-x86-64.so.2 ]; then
+			URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/su-exec-glibc-x64
+		elif [ -e /lib/ld-linux-aarch64.so.1 ]; then
+			URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/su-exec-glibc-aarch64
+		elif [ -e /lib/ld-linux-armhf.so.3 ]; then
+			URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/su-exec-glibc-armv7h
+		fi
+		wget --no-check-certificate "${URL}" -o /usr/local/bin/su-exec
+		chmod 755 /usr/local/bin/su-exec
+	fi
+}
+
+fn_delete_custom() {
+	if [ "${PACKAGE_GOREMAN}" = "Y" ]; then
+		rm -rf /usr/local/bin/goreman
+	fi
+	if [ "${PACKAGE_GOSU}" = "Y" ]; then
+		rm -rf /usr/local/bin/gosu
+	fi
+	if [ "${PACKAGE_SUEXEC}" = "Y" ]; then
+		rm -rf /usr/local/bin/su-exec
+	fi
 }
 
 fn_clean() {
@@ -47,6 +110,9 @@ PARAM_DEL=N
 PARAM_CLEAN=N
 PARAM_EXTRA=
 PACKAGES=
+PACKAGE_GOREMAN=N
+PACKAGE_GOSU=N
+PACKAGE_SUEXEC=N
 
 while [ ${#} -gt 0 ]
 do
@@ -57,6 +123,9 @@ do
 		-d|--del) PARAM_DEL=Y ;;
 		-c|--cean) PARAM_CLEAN=Y ;;
 		-o) PARAM_EXTRA="${PARAM_EXTRA} ${1} ${2}" ; shift ;;
+		goreman) PACKAGE_GOREMAN=Y ;;
+		gosu) PACKAGE_GOSU=Y ;;
+		su-exec) PACKAGE_SUEXEC=Y ;;
 		*) PACKAGES="${PACKAGES} ${1}" ;;
 	esac
 	shift
@@ -78,8 +147,13 @@ if [ ! -z "${PACKAGES}" ]; then
 	if [ "${PARAM_DEL}" = "N" ]; then
 		fn_install ${PARAM_EXTRA} ${PACKAGES}
 	else
-		fn_del ${PARAM_EXTRA} ${PACKAGES}
+		fn_delete ${PARAM_EXTRA} ${PACKAGES}
 	fi
+fi
+if [ "${PARAM_DEL}" = "N" ]; then
+	fn_install ${PARAM_EXTRA} ${PACKAGES}
+else
+	fn_delete ${PARAM_EXTRA} ${PACKAGES}
 fi
 
 if [ "${PARAM_CLEAN}" = "Y" ]; then
