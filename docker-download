@@ -6,12 +6,50 @@ do
 		goreman)
 			URL=""
 			if [ -e /lib/ld-musl-x86_64.so.1 ]; then
-				URL=https://bitbucket.org/forumi0721/docker-dist-files/raw/d04fee6b6d51fd3a51a15f4df01b9ff189763eb1/extra/goreman-musl-aarch64
+				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/goreman-musl-x64
+			elif [ -e /lib/ld-musl-aarch64.so.1 ]; then
+				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/goreman-musl-aarch64
+			elif [ -e /lib/ld-musl-armhf.so.1 ]; then
+				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/goreman-musl-armv7h
+			elif [ -e /lib64/ld-linux-x86-64.so.2 ]; then
+				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/goreman-glibc-x64
+			elif [ -e /lib/ld-linux-aarch64.so.1 ]; then
+				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/goreman-glibc-aarch64
+			elif [ -e /lib/ld-linux-armhf.so.3 ]; then
+				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/goreman-glibc-armv7h
 			fi
+			wget --no-check-certificate "${URL}" -o /usr/local/bin/goreman
+			chmod 755 /usr/local/bin/goreman
 			;;
 		gosu)
+			URL=""
+			if [ -e /lib/ld-musl-x86_64.so.1 -o -e /lib64/ld-linux-x86-64.so.2 ]; then
+				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/gosu-amd64
+			elif [ -e /lib/ld-musl-aarch64.so.1 -o -e /lib/ld-linux-aarch64.so.1 ]; then
+				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/gosu-arm64
+			elif [ -e /lib/ld-musl-armhf.so.1 -o -e /lib/ld-linux-armhf.so.3 ]; then
+				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/gosu-armhf
+			fi
+			wget --no-check-certificate "${URL}" -o /usr/local/bin/gosu
+			chmod 755 /usr/local/bin/gosu
 			;;
 		su-exec)
+			URL=""
+			if [ -e /lib/ld-musl-x86_64.so.1 ]; then
+				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/su-exec-musl-x64
+			elif [ -e /lib/ld-musl-aarch64.so.1 ]; then
+				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/su-exec-musl-aarch64
+			elif [ -e /lib/ld-musl-armhf.so.1 ]; then
+				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/su-exec-musl-armv7h
+			elif [ -e /lib64/ld-linux-x86-64.so.2 ]; then
+				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/su-exec-glibc-x64
+			elif [ -e /lib/ld-linux-aarch64.so.1 ]; then
+				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/su-exec-glibc-aarch64
+			elif [ -e /lib/ld-linux-armhf.so.3 ]; then
+				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/su-exec-glibc-armv7h
+			fi
+			wget --no-check-certificate "${URL}" -o /usr/local/bin/su-exec
+			chmod 755 /usr/local/bin/su-exec
 			;;
 	   	*) 
 			echo "Unknown tool : ${1}"
