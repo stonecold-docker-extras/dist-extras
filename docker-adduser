@@ -99,7 +99,9 @@ if [ -x /usr/sbin/useradd -o -x /sbin/useradd ]; then
 elif [ -x /usr/sbin/adduser -o -x /sbin/adduser ]; then
 	adduser -h ${USER_HOME} -G ${USER_GROUP} -s ${USER_SHELL} -D -u ${USER_UID} $([ -e "${USER_HOME}" ] && echo "-H") $([ "${SYSTEM_ACCOUNT}" = "Y" ] && echo "-S") ${USER_NAME}
 	if [ "${USER_UID}" != "${USER_GID}" ]; then
-		delgroup ${USER_NAME}
+		if [ "${USER_NAME}" != "${USER_GROUP}" -a ! -z "$(grep "^${USER_NAME}:" /etc/group)" ]; then
+			delgroup ${USER_NAME}
+		fi
 
 		if [ -z "$(grep "^${USER_GROUP}:.*:.*${USER_NAME}" /etc/group)" ]; then
 			if [ -z "$(grep "^${USER_GROUP}:.*:.\+" /etc/group)" ]; then
