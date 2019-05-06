@@ -18,7 +18,7 @@ do
 			elif [ -e /lib/ld-linux-armhf.so.3 ]; then
 				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/goreman-glibc-armv7h
 			fi
-			wget --no-check-certificate "${URL}" -o /usr/local/bin/goreman
+			wget --no-check-certificate "${URL}" -O /usr/local/bin/goreman
 			chmod 755 /usr/local/bin/goreman
 			;;
 		gosu)
@@ -30,7 +30,7 @@ do
 			elif [ -e /lib/ld-musl-armhf.so.1 -o -e /lib/ld-linux-armhf.so.3 ]; then
 				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/gosu-armhf
 			fi
-			wget --no-check-certificate "${URL}" -o /usr/local/bin/gosu
+			wget --no-check-certificate "${URL}" -O /usr/local/bin/gosu
 			chmod 755 /usr/local/bin/gosu
 			;;
 		su-exec)
@@ -48,7 +48,7 @@ do
 			elif [ -e /lib/ld-linux-armhf.so.3 ]; then
 				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/su-exec-glibc-armv7h
 			fi
-			wget --no-check-certificate "${URL}" -o /usr/local/bin/su-exec
+			wget --no-check-certificate "${URL}" -O /usr/local/bin/su-exec
 			chmod 755 /usr/local/bin/su-exec
 			;;
 	   	*) 

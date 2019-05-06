@@ -17,10 +17,18 @@ fn_refresh() {
 }
 
 fn_update() {
+	if [ ! -e /var/lib/apt/lists/lock ]; then
+		fn_refresh
+	fi
+
 	apt-get dist-upgrade ${@}
 }
 
 fn_install() {
+	if [ ! -e /var/lib/apt/lists/lock ]; then
+		fn_refresh
+	fi
+
 	apt-get install ${@}
 }
 
@@ -29,53 +37,66 @@ fn_delete() {
 }
 
 fn_install_custom() {
-	if [ "${PACKAGE_GOREMAN}" = "Y" ]; then
-		local URL=""
-		if [ -e /lib/ld-musl-x86_64.so.1 ]; then
-			URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/goreman-musl-x64
-		elif [ -e /lib/ld-musl-aarch64.so.1 ]; then
-			URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/goreman-musl-aarch64
-		elif [ -e /lib/ld-musl-armhf.so.1 ]; then
-			URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/goreman-musl-armv7h
-		elif [ -e /lib64/ld-linux-x86-64.so.2 ]; then
-			URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/goreman-glibc-x64
-		elif [ -e /lib/ld-linux-aarch64.so.1 ]; then
-			URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/goreman-glibc-aarch64
-		elif [ -e /lib/ld-linux-armhf.so.3 ]; then
-			URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/goreman-glibc-armv7h
+	if [ "${PACKAGE_GOREMAN}" = "Y" -a ! -e /usr/local/bin/goreman ] || [ "${PACKAGE_GOSU}" = "Y" -a ! -e /usr/local/bin/gosu ] || [ "${PACKAGE_SUEXEC}" = "Y" -a ! -e /usr/local/bin/su-exec ]; then
+		local install_wget=N
+		if [ -e /opt/bin/opkg -a -z "$(opkg status wget 2> /dev/null)" ]; then
+			fn_install wget
+			install_wget=Y
+		elif ! wget --help &> /dev/null ; then
+			fn_install wget
+			install_wget=Y
 		fi
-		wget --no-check-certificate "${URL}" -o /usr/local/bin/goreman
-		chmod 755 /usr/local/bin/goreman
-	fi
-	if [ "${PACKAGE_GOSU}" = "Y" ]; then
-		local URL=""
-		if [ -e /lib/ld-musl-x86_64.so.1 -o -e /lib64/ld-linux-x86-64.so.2 ]; then
-			URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/gosu-amd64
-		elif [ -e /lib/ld-musl-aarch64.so.1 -o -e /lib/ld-linux-aarch64.so.1 ]; then
-			URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/gosu-arm64
-		elif [ -e /lib/ld-musl-armhf.so.1 -o -e /lib/ld-linux-armhf.so.3 ]; then
-			URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/gosu-armhf
+		if [ "${PACKAGE_GOREMAN}" = "Y" -a ! -e /usr/local/bin/goreman ]; then
+			local URL=""
+			if [ -e /lib/ld-musl-x86_64.so.1 ]; then
+				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/goreman-musl-x64
+			elif [ -e /lib/ld-musl-aarch64.so.1 ]; then
+				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/goreman-musl-aarch64
+			elif [ -e /lib/ld-musl-armhf.so.1 ]; then
+				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/goreman-musl-armv7h
+			elif [ -e /lib64/ld-linux-x86-64.so.2 ]; then
+				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/goreman-glibc-x64
+			elif [ -e /lib/ld-linux-aarch64.so.1 ]; then
+				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/goreman-glibc-aarch64
+			elif [ -e /lib/ld-linux-armhf.so.3 ]; then
+				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/goreman-glibc-armv7h
+			fi
+			wget --no-check-certificate "${URL}" -O /usr/local/bin/goreman
+			chmod 755 /usr/local/bin/goreman
 		fi
-		wget --no-check-certificate "${URL}" -o /usr/local/bin/gosu
-		chmod 755 /usr/local/bin/gosu
-	fi
-	if [ "${PACKAGE_SUEXEC}" = "Y" ]; then
-		local URL=""
-		if [ -e /lib/ld-musl-x86_64.so.1 ]; then
-			URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/su-exec-musl-x64
-		elif [ -e /lib/ld-musl-aarch64.so.1 ]; then
-			URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/su-exec-musl-aarch64
-		elif [ -e /lib/ld-musl-armhf.so.1 ]; then
-			URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/su-exec-musl-armv7h
-		elif [ -e /lib64/ld-linux-x86-64.so.2 ]; then
-			URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/su-exec-glibc-x64
-		elif [ -e /lib/ld-linux-aarch64.so.1 ]; then
-			URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/su-exec-glibc-aarch64
-		elif [ -e /lib/ld-linux-armhf.so.3 ]; then
-			URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/su-exec-glibc-armv7h
+		if [ "${PACKAGE_GOSU}" = "Y" -a ! -e /usr/local/bin/gosu ]; then
+			local URL=""
+			if [ -e /lib/ld-musl-x86_64.so.1 -o -e /lib64/ld-linux-x86-64.so.2 ]; then
+				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/gosu-amd64
+			elif [ -e /lib/ld-musl-aarch64.so.1 -o -e /lib/ld-linux-aarch64.so.1 ]; then
+				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/gosu-arm64
+			elif [ -e /lib/ld-musl-armhf.so.1 -o -e /lib/ld-linux-armhf.so.3 ]; then
+				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/gosu-armhf
+			fi
+			wget --no-check-certificate "${URL}" -O /usr/local/bin/gosu
+			chmod 755 /usr/local/bin/gosu
 		fi
-		wget --no-check-certificate "${URL}" -o /usr/local/bin/su-exec
-		chmod 755 /usr/local/bin/su-exec
+		if [ "${PACKAGE_SUEXEC}" = "Y" -a ! -e /usr/local/bin/su-exec ]; then
+			local URL=""
+			if [ -e /lib/ld-musl-x86_64.so.1 ]; then
+				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/su-exec-musl-x64
+			elif [ -e /lib/ld-musl-aarch64.so.1 ]; then
+				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/su-exec-musl-aarch64
+			elif [ -e /lib/ld-musl-armhf.so.1 ]; then
+				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/su-exec-musl-armv7h
+			elif [ -e /lib64/ld-linux-x86-64.so.2 ]; then
+				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/su-exec-glibc-x64
+			elif [ -e /lib/ld-linux-aarch64.so.1 ]; then
+				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/su-exec-glibc-aarch64
+			elif [ -e /lib/ld-linux-armhf.so.3 ]; then
+				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/su-exec-glibc-armv7h
+			fi
+			wget --no-check-certificate "${URL}" -O /usr/local/bin/su-exec
+			chmod 755 /usr/local/bin/su-exec
+		fi
+		if [ "${install_wget}" = "Y" ]; then
+			fn_delete wget
+		fi
 	fi
 }
 
