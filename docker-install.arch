@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-LC_ALL=C 
+LC_ALL=C
 
 fn_usage() {
 	echo "Usage : $(basename "${0}") [package]"
@@ -8,10 +8,14 @@ fn_usage() {
 }
 
 fn_refresh() {
+	fn_check_busybox
+
 	pacman -Sy --noconfirm --quiet
 }
 
 fn_update() {
+	fn_check_busybox
+
 	if [ ! -e /var/lib/pacman/sync/core.db ]; then
 		fn_refresh
 	fi
@@ -29,6 +33,8 @@ fn_install() {
 	#	mv /usr/bin/systemd-sysusers /usr/bin/systemd-sysusers.ORG
 	#	ln -s /usr/local/bin/docker-sysusers /usr/bin/systemd-sysusers
 	#fi
+
+	fn_check_busybox
 
 	if [ ! -e /var/lib/pacman/sync/core.db ]; then
 		fn_refresh
@@ -48,6 +54,8 @@ fn_install() {
 
 fn_delete() {
 	pacman -Rsn --noconfirm ${@}
+
+	fn_check_busybox
 }
 
 fn_yaourt_start() {
@@ -181,7 +189,85 @@ fn_clean() {
 	fi
 	rm -rf /etc/pacman.d/mirrorlist.pacnew
 	echo -e "Y\nY" | pacman -Scc &> /dev/null
-	rm -rf /qemu_sh_*.core /var/log/pacman.log /var/cache/pacman/pkg/* /var/lib/pacman/sync/* /tmp/yaourt-tmp-*
+
+	fn_check_busybox
+
+	#Linux
+	find  /tmp -mindepth 1 -maxdepth 1 -exec rm -rf "{}" \;
+	find  /var/tmp -mindepth 1 -maxdepth 1 -exec rm -rf "{}" \;
+	rm -rf /core /*.core
+	[ -d /var/log ] && rm -rf /var/log/*
+
+	#Distro
+	rm -rf /var/cache/pacman/pkg/*
+	rm -rf /var/lib/pacman/sync/*
+
+	#Slimization
+	[ -d /usr/share/doc ] && rm -rf /usr/share/doc/*
+	[ -d /usr/share/gtk-doc ] && rm -rf /usr/share/gtk-doc/*
+	[ -d /usr/share/man ] && rm -rf /usr/share/man/*
+	[ -d /usr/share/info ] && rm -rf /usr/share/info/*
+	[ -e /usr/share/zoneinfo-leaps ] && rm -rf /usr/share/zoneinfo-leaps
+	[ -e /usr/share/zoneinfo-posix ] && rm -rf /usr/share/zoneinfo-posix
+	if [ -e /usr/share/zoneinfo ]; then
+		local regex=""
+		for x in UTC\* UCT\* GMT\* Universal localtime zone.tab Seoul
+		do
+			regex="${regex} -a ! -name ${x} "
+		done
+
+		find /usr/share/zoneinfo -mindepth 1 \( -type l -o -type f \) ${regex} -exec rm -rf '{}' 2>/dev/null \;
+		find /usr/share/zoneinfo -mindepth 1 -maxdepth 1 -type d -a ! -name Asia -exec rm -rf '{}' 2>/dev/null \;
+		find /usr/share/zoneinfo -mindepth 1 -type d -size 0 -exec rm -rf '{}' 2>/dev/null \;
+	fi
+	if [ -e /usr/share/locale ]; then
+		local regex=""
+		for x in locale.alias ko
+		do
+			regex="${regex} -a ! -name ${x} "
+		done
+
+		find /usr/share/locale -mindepth 1 \( -type l -o -type f \) ${regex} -exec rm -rf '{}' 2>/dev/null \;
+		find /usr/share/locale -mindepth 1 -type d -size 0 -exec rm -rf '{}' 2>/dev/null \;
+	fi
+	if [ -e /usr/share/i18n/locales ]; then
+		local regex=""
+		for x in i18n i18n_ctype iso14651_t1 iso14651_t1_common translit_circle translit_cjk_compat translit_combining translit_compat translit_font translit_fraction translit_narrow translit_neutral translit_small translit_wide translit_hangul ko_KR
+		do
+			regex="${regex} -a ! -name ${x} "
+		done
+
+		find /usr/share/i18n/locales -mindepth 1 \( -type l -o -type f \) ${regex} -exec rm -rf '{}' 2>/dev/null \;
+		find /usr/share/i18n/locales -mindepth 1 -type d -size 0 -exec rm -rf '{}' 2>/dev/null \;
+	fi
+	if [ -e /usr/share/i18n/charmaps ]; then
+		local regex=""
+		for x in ANSI_X3.4-1968.gz ANSI_X3.110-1983.gz UTF-8.gz EUC-KR.gz KSC5636.gz CP949.gz
+		do
+			regex="${regex} -a ! -name ${x} "
+		done
+
+		find /usr/share/i18n/charmaps -mindepth 1 \( -type l -o -type f \) ${regex} -exec rm -rf '{}' 2>/dev/null \;
+		find /usr/share/i18n/charmaps -mindepth 1 -type d -size 0 -exec rm -rf '{}' 2>/dev/null \;
+	fi
+	if [ -e /usr/share/terminfo ]; then
+		local regex=""
+		for x in ansi dumb linux rxvt screen screen-256color vt100 vt102 xterm xterm-256color xterm-color xterm-utf8 cons25-debian xterm-debian
+		do
+			regex="${regex} -a ! -name ${x} "
+		done
+
+		find /usr/share/terminfo -mindepth 1 \( -type l -o -type f \) ${regex} -exec rm -rf '{}' 2>/dev/null \;
+		find /usr/share/terminfo -mindepth 1 -type d -size 0 -exec rm -rf '{}' 2>/dev/null \;
+	fi
+}
+
+fn_check_busybox() {
+	if [ -x /bin/busybox ]; then
+		/bin/busybox --install -s
+	elif [ -x /bin/busybox.static ]; then
+		/bin/busybox.static --install -s
+	fi
 }
 
 
@@ -265,3 +351,4 @@ if [ "${PARAM_CLEAN}" = "Y" ]; then
 	fn_clean
 fi
 
+exit 0

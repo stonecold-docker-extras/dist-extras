@@ -114,7 +114,71 @@ fn_delete_custom() {
 }
 
 fn_clean() {
-	rm -rf /qemu_sh_*.core /opt/tmp/opkg-* /opt/var/opkg-lists/*
+	fn_check_busybox
+
+	#Linux
+	find  /opt/tmp -mindepth 1 -maxdepth 1 -exec rm -rf "{}" \;
+	rm -rf /core /*.core
+	[ -d /opt/var/log ] && rm -rf /opt/var/log/*
+
+	#Distro
+	rm -rf /opt/var/opkg-lists/*
+
+	#Slimization
+	[ -d /opt/share/doc ] && rm -rf /opt/share/doc/*
+	[ -d /opt/share/man ] && rm -rf /opt/share/man/*
+	[ -d /opt/share/info ] && rm -rf /opt/share/info/*
+	if [ -e /opt/share/zoneinfo ]; then
+		local regex=""
+		for x in UTC\* UCT\* GMT\* Universal localtime zone.tab Seoul
+		do
+			regex="${regex} -a ! -name ${x} "
+		done
+
+		find /opt/share/zoneinfo -mindepth 1 \( -type l -o -type f \) ${regex} -exec rm -rf '{}' 2>/dev/null \;
+		find /opt/share/zoneinfo -mindepth 1 -maxdepth 1 -type d -a ! -name Asia -exec rm -rf '{}' 2>/dev/null \;
+		find /opt/share/zoneinfo -mindepth 1 -type d -size 0 -exec rm -rf '{}' 2>/dev/null \;
+	fi
+	if [ -e /usr/share/locale ]; then
+		local regex=""
+		for x in locale.alias ko
+		do
+			regex="${regex} -a ! -name ${x} "
+		done
+
+		find /usr/share/locale -mindepth 1 \( -type l -o -type f \) ${regex} -exec rm -rf '{}' 2>/dev/null \;
+		find /usr/share/locale -mindepth 1 -type d -size 0 -exec rm -rf '{}' 2>/dev/null \;
+	fi
+	if [ -e /usr/share/i18n/locales ]; then
+		local regex=""
+		for x in i18n i18n_ctype iso14651_t1 iso14651_t1_common translit_circle translit_cjk_compat translit_combining translit_compat translit_font translit_fraction translit_narrow translit_neutral translit_small translit_wide translit_hangul ko_KR
+		do
+			regex="${regex} -a ! -name ${x} "
+		done
+
+		find /usr/share/i18n/locales -mindepth 1 \( -type l -o -type f \) ${regex} -exec rm -rf '{}' 2>/dev/null \;
+		find /usr/share/i18n/locales -mindepth 1 -type d -size 0 -exec rm -rf '{}' 2>/dev/null \;
+	fi
+	if [ -e /usr/share/i18n/charmaps ]; then
+		local regex=""
+		for x in ANSI_X3.4-1968.gz ANSI_X3.110-1983.gz UTF-8.gz EUC-KR.gz KSC5636.gz CP949.gz
+		do
+			regex="${regex} -a ! -name ${x} "
+		done
+
+		find /usr/share/i18n/charmaps -mindepth 1 \( -type l -o -type f \) ${regex} -exec rm -rf '{}' 2>/dev/null \;
+		find /usr/share/i18n/charmaps -mindepth 1 -type d -size 0 -exec rm -rf '{}' 2>/dev/null \;
+	fi
+	if [ -e /opt/share/terminfo ]; then
+		local regex=""
+		for x in ansi dumb linux rxvt screen screen-256color vt100 vt102 xterm xterm-256color xterm-color xterm-utf8 cons25-debian xterm-debian
+		do
+			regex="${regex} -a ! -name ${x} "
+		done
+
+		find /opt/share/terminfo -mindepth 1 \( -type l -o -type f \) ${regex} -exec rm -rf '{}' 2>/dev/null \;
+		find /opt/share/terminfo -mindepth 1 -type d -size 0 -exec rm -rf '{}' 2>/dev/null \;
+	fi
 }
 
 fn_check_busybox() {
@@ -195,3 +259,4 @@ if [ "${PARAM_CLEAN}" = "Y" ]; then
 	fn_clean
 fi
 
+exit 0
