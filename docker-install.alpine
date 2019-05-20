@@ -113,28 +113,39 @@ fn_clean() {
 	fn_check_busybox
 
 	#Linux
-	find  /tmp -mindepth 1 -maxdepth 1 -exec rm -rf "{}" \;
-	find  /var/tmp -mindepth 1 -maxdepth 1 -exec rm -rf "{}" \;
 	rm -rf /core /*.core
-	[ -d /var/log ] && rm -rf /var/log/*
+	[ -d /tmp ] && find /tmp -mindepth 1 -maxdepth 1 -exec rm -rf "{}" \;
+	[ -d /var/tmp ] && find /var/tmp -mindepth 1 -maxdepth 1 -exec rm -rf "{}" \;
+	[ -d /var/log ] && find /var/log -mindepth 1 -maxdepth 1 -exec rm -rf "{}" \;
 
 	#Distro
-	rm -rf /var/cache/apk/*
+	[ -d /var/cache/apk ] && rm -rf /var/cache/apk/*
 
 	#Slimization
 	[ -d /usr/share/doc ] && rm -rf /usr/share/doc/*
+	[ -d /usr/share/doc-base ] && rm -rf /usr/share/doc-base/*
+	[ -d /usr/share/gtk-doc ] && rm -rf /usr/share/gtk-doc/*
 	[ -d /usr/share/man ] && rm -rf /usr/share/man/*
 	[ -d /usr/share/info ] && rm -rf /usr/share/info/*
 	if [ -e /usr/share/zoneinfo ]; then
 		local regex=""
-		for x in UTC\* UCT\* GMT\* Universal localtime zone.tab Seoul
+		for x in UTC\* UCT\* GMT\* Universal localtime zone.tab Seoul ROK
 		do
 			regex="${regex} -a ! -name ${x} "
 		done
 
 		find /usr/share/zoneinfo -mindepth 1 \( -type l -o -type f \) ${regex} -exec rm -rf '{}' 2>/dev/null \;
-		find /usr/share/zoneinfo -mindepth 1 -maxdepth 1 -type d -a ! -name Asia -exec rm -rf '{}' 2>/dev/null \;
-		find /usr/share/zoneinfo -mindepth 1 -type d -size 0 -exec rm -rf '{}' 2>/dev/null \;
+
+		if [ -e /usr/share/zoneinfo/Asia/Seoul ]; then
+			local regex=""
+			for x in Asia
+			do
+				regex="${regex} -a ! -name ${x} "
+			done
+			find /usr/share/zoneinfo -mindepth 1 -maxdepth 1 -type d ${regex} -exec rm -rf '{}' 2>/dev/null \;
+		else
+			find /usr/share/zoneinfo -mindepth 1 -maxdepth 1 -type d -exec rm -rf '{}' 2>/dev/null \;
+		fi
 	fi
 	if [ -e /usr/share/locale ]; then
 		local regex=""
@@ -143,8 +154,7 @@ fn_clean() {
 			regex="${regex} -a ! -name ${x} "
 		done
 
-		find /usr/share/locale -mindepth 1 \( -type l -o -type f \) ${regex} -exec rm -rf '{}' 2>/dev/null \;
-		find /usr/share/locale -mindepth 1 -type d -size 0 -exec rm -rf '{}' 2>/dev/null \;
+		find /usr/share/locale -mindepth 1 -maxdepth 1 ${regex} -exec rm -rf '{}' 2>/dev/null \;
 	fi
 	if [ -e /usr/share/i18n/locales ]; then
 		local regex=""
@@ -153,8 +163,7 @@ fn_clean() {
 			regex="${regex} -a ! -name ${x} "
 		done
 
-		find /usr/share/i18n/locales -mindepth 1 \( -type l -o -type f \) ${regex} -exec rm -rf '{}' 2>/dev/null \;
-		find /usr/share/i18n/locales -mindepth 1 -type d -size 0 -exec rm -rf '{}' 2>/dev/null \;
+		find /usr/share/i18n/locales -mindepth 1 -maxdepth 1 ${regex} -exec rm -rf '{}' 2>/dev/null \;
 	fi
 	if [ -e /usr/share/i18n/charmaps ]; then
 		local regex=""
@@ -163,19 +172,24 @@ fn_clean() {
 			regex="${regex} -a ! -name ${x} "
 		done
 
-		find /usr/share/i18n/charmaps -mindepth 1 \( -type l -o -type f \) ${regex} -exec rm -rf '{}' 2>/dev/null \;
-		find /usr/share/i18n/charmaps -mindepth 1 -type d -size 0 -exec rm -rf '{}' 2>/dev/null \;
+		find /usr/share/i18n/charmaps -mindepth 1 -maxdepth 1 ${regex} -exec rm -rf '{}' 2>/dev/null \;
 	fi
-	if [ -e /usr/share/terminfo ]; then
+	for term in  /usr/share/termino /usr/lib/terminfo
+	do
+		if [ ! -e ${term} ]; then
+			continue
+		fi
 		local regex=""
+		local regex2=""
 		for x in ansi dumb linux rxvt screen screen-256color vt100 vt102 xterm xterm-256color xterm-color xterm-utf8 cons25-debian xterm-debian
 		do
 			regex="${regex} -a ! -name ${x} "
+			regex2="${regex2} -a ! -name ${x:0:1} "
 		done
 
-		find /usr/share/terminfo -mindepth 1 \( -type l -o -type f \) ${regex} -exec rm -rf '{}' 2>/dev/null \;
-		find /usr/share/terminfo -mindepth 1 -type d -size 0 -exec rm -rf '{}' 2>/dev/null \;
-	fi
+		find ${term} -mindepth 1 \( -type l -o -type f \) ${regex} -exec rm -rf '{}' 2>/dev/null \;
+		find ${term} -mindepth 1 -maxdepth 1 ${regex2} -exec rm -rf '{}' 2>/dev/null \;
+	done
 }
 
 fn_check_busybox() {
