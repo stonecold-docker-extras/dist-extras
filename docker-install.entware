@@ -125,6 +125,8 @@ fn_clean() {
 	#Distro
 	[ -d /opt/var/opkg-lists ] && rm -rf /opt/var/opkg-lists/*
 
+	return
+
 	#Slimization
 	[ -d /opt/share/doc ] && rm -rf /opt/share/doc/*
 	[ -d /opt/share/man ] && rm -rf /opt/share/man/*

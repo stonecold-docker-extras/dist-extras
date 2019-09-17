@@ -138,6 +138,8 @@ fn_clean() {
 	[ -d /var/cache/apt/archives ] && rm -rf /var/cache/apt/archives/*.deb
 	[ -d /var/cache/apt/archives/partial ] && rm -rf /var/cache/apt/archives/partial/*.deb
 
+	return
+
 	#Slimization
 	[ -d /usr/share/doc ] && rm -rf /usr/share/doc/*
 	[ -d /usr/share/doc-base ] && rm -rf /usr/share/doc-base/*

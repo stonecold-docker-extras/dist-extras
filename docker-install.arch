@@ -202,6 +202,8 @@ fn_clean() {
 	[ -d /var/cache/pacman/pkg ] && rm -rf /var/cache/pacman/pkg/*
 	[ -d /var/lib/pacman/sync ] && rm -rf /var/lib/pacman/sync/*
 
+	return
+
 	#Slimization
 	[ -d /usr/share/doc ] && rm -rf /usr/share/doc/*
 	[ -d /usr/share/doc-base ] && rm -rf /usr/share/doc-base/*

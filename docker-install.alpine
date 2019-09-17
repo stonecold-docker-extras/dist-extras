@@ -121,6 +121,8 @@ fn_clean() {
 	#Distro
 	[ -d /var/cache/apk ] && rm -rf /var/cache/apk/*
 
+	return
+
 	#Slimization
 	[ -d /usr/share/doc ] && rm -rf /usr/share/doc/*
 	[ -d /usr/share/doc-base ] && rm -rf /usr/share/doc-base/*
