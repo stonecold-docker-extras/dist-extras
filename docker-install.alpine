@@ -36,10 +36,10 @@ fn_delete() {
 fn_install_custom() {
 	if [ "${PACKAGE_GOREMAN}" = "Y" -a ! -e /usr/local/bin/goreman ] || [ "${PACKAGE_GOSU}" = "Y" -a ! -e /usr/local/bin/gosu ] || [ "${PACKAGE_SUEXEC}" = "Y" -a ! -e /usr/local/bin/su-exec ]; then
 		local install_wget=N
-		if [ -e /opt/bin/opkg -a -z "$(opkg status wget 2> /dev/null)" ]; then
+		if ! wget --help &> /dev/null ; then
 			fn_install wget
 			install_wget=Y
-		elif ! wget --help &> /dev/null ; then
+		elif [ ! -z "$(wget --help 2>&1| grep BusyBox)" ]; then
 			fn_install wget
 			install_wget=Y
 		fi

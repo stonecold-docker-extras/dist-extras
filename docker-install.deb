@@ -3,7 +3,7 @@
 LC_ALL=C
 
 apt() {
-	DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true apt-get -o Acquire::Languages=none -o Acquire::GzipIndexes=true -o Acquire::CompressionTypes::Order::=gz -o APT::Install-Recommends=false -o APT::Install-Suggests=false -y "${@}"
+	DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true apt-get -o Acquire::Languages=none -o Acquire::GzipIndexes=true -o Acquire::CompressionTypes::Order::=gz -o APT::Install-Recommends=false -o APT::Install-Suggests=false -yy "${@}"
 }
 
 fn_usage() {
@@ -24,7 +24,9 @@ fn_update() {
 		fn_refresh
 	fi
 
-	#apt dist-upgrade ${@}
+	if [ "${PARAM_FULL_UPDATE}" ]; then
+		apt dist-upgrade ${@}
+	fi
 	apt upgrade ${@}
 }
 
@@ -47,10 +49,10 @@ fn_delete() {
 fn_install_custom() {
 	if [ "${PACKAGE_GOREMAN}" = "Y" -a ! -e /usr/local/bin/goreman ] || [ "${PACKAGE_GOSU}" = "Y" -a ! -e /usr/local/bin/gosu ] || [ "${PACKAGE_SUEXEC}" = "Y" -a ! -e /usr/local/bin/su-exec ]; then
 		local install_wget=N
-		if [ -e /opt/bin/opkg -a -z "$(opkg status wget 2> /dev/null)" ]; then
+		if ! wget --help &> /dev/null ; then
 			fn_install wget
 			install_wget=Y
-		elif ! wget --help &> /dev/null ; then
+		elif [ ! -z "$(wget --help 2>&1| grep BusyBox)" ]; then
 			fn_install wget
 			install_wget=Y
 		fi
@@ -232,6 +234,7 @@ fi
 
 PARAM_REFRESH=N
 PARAM_UPDATE=N
+PARAM_FULL_UPDATE=N
 PARAM_DEL=N
 PARAM_CLEAN=N
 PARAM_EXTRA=()
@@ -246,6 +249,7 @@ do
 		-h|--help) fn_usage ;;
 		-r|--refresh) PARAM_REFRESH=Y ;;
 		-u|--update) PARAM_UPDATE=Y ;;
+		-f|--fullupdate) PARAM_FULL_UPDATE=Y ;;
 		-d|--del) PARAM_DEL=Y ;;
 		-c|--cean) PARAM_CLEAN=Y ;;
 		-o) PARAM_EXTRA+=(${1} ${2}) ; shift ;;
