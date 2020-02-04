@@ -220,6 +220,7 @@ fi
 
 PARAM_REFRESH=N
 PARAM_UPDATE=N
+PARAM_FULL_UPDATE=N
 PARAM_DEL=N
 PARAM_CLEAN=N
 PARAM_EXTRA=
@@ -234,6 +235,7 @@ do
 		-h|--help) fn_usage ;;
 		-r|--refresh) PARAM_REFRESH=Y ;;
 		-u|--update) PARAM_UPDATE=Y ;;
+		-f|--fullupdate) PARAM_FULL_UPDATE=Y ;;
 		-d|--del) PARAM_DEL=Y ;;
 		-c|--cean) PARAM_CLEAN=Y ;;
 		-o) PARAM_EXTRA="${PARAM_EXTRA} ${1} ${2}" ; shift ;;
