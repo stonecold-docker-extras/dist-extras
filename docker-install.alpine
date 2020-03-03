@@ -119,7 +119,7 @@ fn_clean() {
 	[ -d /var/log ] && find /var/log -mindepth 1 -maxdepth 1 -exec rm -rf "{}" \;
 
 	#root
-	find /root -mindepth 1 -exec rm -rf "{}" \;
+	find /root -mindepth 1 -maxdepth 1 -exec rm -rf "{}" \;
 	if [ -e /etc/skel ]; then
 		find /etc/skel -mindepth 1 -exec cp -ar "{}" /root/ \;
 	fi
