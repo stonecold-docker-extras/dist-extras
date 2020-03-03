@@ -134,6 +134,12 @@ fn_clean() {
 	[ -d /var/tmp ] && find /var/tmp -mindepth 1 -maxdepth 1 -exec rm -rf "{}" \;
 	[ -d /var/log ] && find /var/log -mindepth 1 -maxdepth 1 -exec rm -rf "{}" \;
 
+	#root
+	find /root -mindepth 1 -exec rm -rf "{}" \;
+	if [ -e /etc/skel ]; then
+		find /etc/skel -mindepth 1 -exec cp -ar "{}" /root/ \;
+	fi
+
 	#Distro
 	[ -d /var/lib/apt ] && find /var/lib/apt \( -type l -o -type f \) -exec rm "{}" \;
 	[ -d /var/cache/apt ] && rm -rf /var/cache/apt/*.bin

@@ -122,6 +122,12 @@ fn_clean() {
 	[ -d /opt/var/tmp ] && find /opt/var/tmp -mindepth 1 -maxdepth 1 -exec rm -rf "{}" \;
 	[ -d /opt/var/log ] && find /opt/var/log -mindepth 1 -maxdepth 1 -exec rm -rf "{}" \;
 
+	#root
+	find /root -mindepth 1 -exec rm -rf "{}" \;
+	if [ -e /etc/skel ]; then
+		find /etc/skel -mindepth 1 -exec cp -ar "{}" /root/ \;
+	fi
+
 	#Distro
 	[ -d /opt/var/opkg-lists ] && rm -rf /opt/var/opkg-lists/*
 
