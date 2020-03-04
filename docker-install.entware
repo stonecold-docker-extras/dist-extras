@@ -123,7 +123,9 @@ fn_clean() {
 	[ -d /opt/var/log ] && find /opt/var/log -mindepth 1 -maxdepth 1 -exec rm -rf "{}" \;
 
 	#root
-	find /root -mindepth 1 -maxdepth 1 -exec rm -rf "{}" \;
+	if [ -z "$(mount | grep ' /opt/root ')" ]; then
+		find /root -mindepth 1 -maxdepth 1 -exec rm -rf "{}" \;
+	fi
 	if [ -e /etc/skel ]; then
 		find /etc/skel -mindepth 1 -exec cp -ar "{}" /root/ \;
 	fi
