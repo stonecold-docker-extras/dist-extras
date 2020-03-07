@@ -34,16 +34,37 @@ fn_delete() {
 }
 
 fn_install_custom() {
-	if [ "${PACKAGE_GOREMAN}" = "Y" -a ! -e /usr/local/bin/goreman ] || [ "${PACKAGE_GOSU}" = "Y" -a ! -e /usr/local/bin/gosu ] || [ "${PACKAGE_SUEXEC}" = "Y" -a ! -e /usr/local/bin/su-exec ]; then
+	if [ "${PACKAGE_FOREGO}" = "Y" -a ! -e /usr/local/bin/forego ] || [ "${PACKAGE_GOREMAN}" = "Y" -a ! -e /usr/local/bin/goreman ] || [ "${PACKAGE_SHOREMAN}" = "Y" -a ! -e /usr/local/bin/shoreman ] || [ "${PACKAGE_GOSU}" = "Y" -a ! -e /usr/local/bin/gosu ] || [ "${PACKAGE_SUEXEC}" = "Y" -a ! -e /usr/local/bin/su-exec ]; then
 		local install_wget=N
 		if ! wget --help &> /dev/null ; then
 			fn_install wget
 			install_wget=Y
-		elif [ ! -z "$(wget --help 2>&1| grep BusyBox)" ]; then
-			fn_install wget
-			install_wget=Y
+		#elif [ ! -z "$(wget --help 2>&1| grep BusyBox)" ]; then
+		#	fn_install wget
+		#	install_wget=Y
+		fi
+		if [ "${PACKAGE_FOREGO}" = "Y" -a ! -e /usr/local/bin/forego ]; then
+			echo "Installing forego"
+			local URL=""
+			if [ -e /lib/ld-musl-x86_64.so.1 ]; then
+				URL=https://bin.equinox.io/c/ekMN3bCZFUn/forego-stable-linux-amd64.tgz
+			elif [ -e /lib/ld-musl-aarch64.so.1 ]; then
+				URL=https://bin.equinox.io/c/ekMN3bCZFUn/forego-stable-linux-arm64.tgz
+			elif [ -e /lib/ld-musl-armhf.so.1 ]; then
+				URL=https://bin.equinox.io/c/ekMN3bCZFUn/forego-stable-linux-arm.tgz
+			elif [ -e /lib64/ld-linux-x86-64.so.2 ]; then
+				URL=https://bin.equinox.io/c/ekMN3bCZFUn/forego-stable-linux-amd64.tgz
+			elif [ -e /lib/ld-linux-aarch64.so.1 ]; then
+				URL=https://bin.equinox.io/c/ekMN3bCZFUn/forego-stable-linux-arm64.tgz
+			elif [ -e /lib/ld-linux-armhf.so.3 ]; then
+				URL=https://bin.equinox.io/c/ekMN3bCZFUn/forego-stable-linux-arm.tgz
+			fi
+			wget --no-check-certificate "${URL}" -q -O - | tar zxf - -C /usr/local/bin/
+			chmod 755 /usr/local/bin/forego
+			echo "OK"
 		fi
 		if [ "${PACKAGE_GOREMAN}" = "Y" -a ! -e /usr/local/bin/goreman ]; then
+			echo "Installing goreman"
 			local URL=""
 			if [ -e /lib/ld-musl-x86_64.so.1 ]; then
 				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/goreman-musl-x64
@@ -58,10 +79,19 @@ fn_install_custom() {
 			elif [ -e /lib/ld-linux-armhf.so.3 ]; then
 				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/goreman-glibc-armv7h
 			fi
-			wget --no-check-certificate "${URL}" -O /usr/local/bin/goreman
+			wget --no-check-certificate "${URL}" -q -O /usr/local/bin/goreman
 			chmod 755 /usr/local/bin/goreman
+			echo "OK"
+		fi
+		if [ "${PACKAGE_SHOREMAN}" = "Y" -a ! -e /usr/local/bin/shoreman ]; then
+			echo "Installing shoreman"
+			local URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/shoreman
+			wget --no-check-certificate "${URL}" -q -O /usr/local/bin/shoreman
+			chmod 755 /usr/local/bin/shoreman
+			echo "OK"
 		fi
 		if [ "${PACKAGE_GOSU}" = "Y" -a ! -e /usr/local/bin/gosu ]; then
+			echo "Installing gosu"
 			local URL=""
 			if [ -e /lib/ld-musl-x86_64.so.1 -o -e /lib64/ld-linux-x86-64.so.2 ]; then
 				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/gosu-amd64
@@ -70,10 +100,12 @@ fn_install_custom() {
 			elif [ -e /lib/ld-musl-armhf.so.1 -o -e /lib/ld-linux-armhf.so.3 ]; then
 				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/gosu-armhf
 			fi
-			wget --no-check-certificate "${URL}" -O /usr/local/bin/gosu
+			wget --no-check-certificate "${URL}" -q -O /usr/local/bin/gosu
 			chmod 755 /usr/local/bin/gosu
+			echo "OK"
 		fi
 		if [ "${PACKAGE_SUEXEC}" = "Y" -a ! -e /usr/local/bin/su-exec ]; then
+			echo "Installing su-exec"
 			local URL=""
 			if [ -e /lib/ld-musl-x86_64.so.1 ]; then
 				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/su-exec-musl-x64
@@ -90,6 +122,7 @@ fn_install_custom() {
 			fi
 			wget --no-check-certificate "${URL}" -O /usr/local/bin/su-exec
 			chmod 755 /usr/local/bin/su-exec
+			echo "OK"
 		fi
 		if [ "${install_wget}" = "Y" ]; then
 			fn_delete wget
@@ -98,8 +131,14 @@ fn_install_custom() {
 }
 
 fn_delete_custom() {
+	if [ "${PACKAGE_FOREGO}" = "Y" ]; then
+		rm -rf /usr/local/bin/forego
+	fi
 	if [ "${PACKAGE_GOREMAN}" = "Y" ]; then
 		rm -rf /usr/local/bin/goreman
+	fi
+	if [ "${PACKAGE_SHOREMAN}" = "Y" ]; then
+		rm -rf /usr/local/bin/shoreman
 	fi
 	if [ "${PACKAGE_GOSU}" = "Y" ]; then
 		rm -rf /usr/local/bin/gosu
@@ -227,7 +266,9 @@ PARAM_DEL=N
 PARAM_CLEAN=N
 PARAM_EXTRA=
 PACKAGES=
+PACKAGE_FOREGO=N
 PACKAGE_GOREMAN=N
+PACKAGE_SHOREMAN=N
 PACKAGE_GOSU=N
 PACKAGE_SUEXEC=N
 
@@ -240,7 +281,9 @@ do
 		-d|--del) PARAM_DEL=Y ;;
 		-c|--cean) PARAM_CLEAN=Y ;;
 		-o) PARAM_EXTRA="${PARAM_EXTRA} ${1} ${2}" ; shift ;;
+		forego) PACKAGE_FOREGO=Y ;;
 		goreman) PACKAGE_GOREMAN=Y ;;
+		shoreman) PACKAGE_SHOREMAN=Y ;;
 		gosu) PACKAGE_GOSU=Y ;;
 		su-exec) PACKAGE_SUEXEC=Y ;;
 		*) PACKAGES="${PACKAGES} ${1}" ;;
