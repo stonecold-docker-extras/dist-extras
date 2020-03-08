@@ -176,7 +176,7 @@ fn_install_custom() {
 			elif [ -e /lib/ld-linux-armhf.so.3 ]; then
 				URL=https://bitbucket.org/forumi0721/docker-dist-extras/raw/master/su-exec-glibc-armv7h
 			fi
-			wget --no-check-certificate "${URL}" -O /usr/local/bin/su-exec
+			wget --no-check-certificate "${URL}" -q -O /usr/local/bin/su-exec
 			chmod 755 /usr/local/bin/su-exec
 			echo "OK"
 		fi
