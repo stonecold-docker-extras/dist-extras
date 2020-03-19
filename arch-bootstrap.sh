@@ -27,6 +27,7 @@ PACMAN_PACKAGES=(
   krb5 e2fsprogs keyutils libidn2 libunistring gcc-libs lz4 libpsl icu libunistring zstd
   bash readline ncurses
   coreutils gmp libcap
+  findutils
 )
 BASIC_PACKAGES=(${PACMAN_PACKAGES[*]} filesystem)
 EXTRA_PACKAGES=(coreutils bash grep gawk file tar systemd sed)
