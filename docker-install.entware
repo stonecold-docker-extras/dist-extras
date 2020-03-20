@@ -43,9 +43,9 @@ fn_install_custom() {
 		if ! wget --help &> /dev/null ; then
 			fn_install wget
 			install_wget=Y
-		#elif [ ! -z "$(wget --help 2>&1| grep BusyBox)" ]; then
-		#	fn_install wget
-		#	install_wget=Y
+		elif [ ! -z "$(wget --help 2>&1| grep BusyBox)" ]; then
+			fn_install wget
+			install_wget=Y
 		fi
 		if [ "${PACKAGE_FOREGO}" = "Y" -a ! -e /usr/local/bin/forego ]; then
 			echo "Installing forego"
