@@ -159,7 +159,7 @@ fn_clean() {
 	rm -rf /core /*.core
 	[ -d /tmp ] && find /tmp -mindepth 1 -maxdepth 1 -exec rm -rf "{}" \;
 	[ -d /opt/var/tmp ] && find /opt/var/tmp -mindepth 1 -maxdepth 1 -exec rm -rf "{}" \;
-	[ -d /opt/var/log ] && find /opt/var/log -mindepth 1 -maxdepth 1 -exec rm -rf "{}" \;
+	[ -d /opt/var/log ] && find /opt/var/log -mindepth 1 -type f -exec rm -rf "{}" \;
 
 	#root
 	if [ -z "$(mount | grep ' /opt/root ')" ]; then
