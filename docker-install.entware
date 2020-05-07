@@ -147,7 +147,7 @@ fn_install_custom() {
 			esac
 			local BBSTATIC_VERSION="$(wget -q -O - ${ALPINE_MIRROR}/${ALPINE_DIST}/main/${ALPINE_ARCH}/APKINDEX.tar.gz | tar -Oxz | grep --text '^P:busybox-static$' -A1 | tail -n1 | cut -d: -f2)"
 			local BBSTATIC_URL="${ALPINE_MIRROR}/${ALPINE_DIST}/main/${ALPINE_ARCH}/busybox-static-${BBSTATIC_VERSION}.apk"
-			wget ${BBSTATIC_URL}-q -O - | tar -xz -C /usr/local bin/busybox.static  2>/dev/null
+			wget ${BBSTATIC_URL} -q -O - | tar -xz -C /usr/local bin/busybox.static 2>/dev/null
 			chmod 755 /usr/local/bin/busybox.static
 			echo "OK"
 		fi
