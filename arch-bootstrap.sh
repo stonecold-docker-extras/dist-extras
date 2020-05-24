@@ -60,9 +60,9 @@ fetch_file() {
   local FILEPATH=$1
   shift
   if [[ -e "$FILEPATH" ]]; then
-    curl -L -z "$FILEPATH" -o "$FILEPATH" "$@"
+    curl -L -s -z "$FILEPATH" -o "$FILEPATH" "$@"
   else
-    curl -L -o "$FILEPATH" "$@"
+    curl -L -s -o "$FILEPATH" "$@"
   fi
 }
 
