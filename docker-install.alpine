@@ -15,6 +15,7 @@ fn_update() {
 	fn_check_busybox
 
 	apk upgrade $@
+	apk fix
 
 	if [ -e /etc/TZ.apk-new ]; then
 		mv /etc/TZ.apk-new /etc/TZ
@@ -25,10 +26,12 @@ fn_install() {
 	fn_check_busybox
 
 	apk add $@
+	apk fix
 }
 
 fn_delete() {
 	apk del $@ --purge
+	apk fix
 
 	fn_check_busybox
 }
