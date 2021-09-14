@@ -20,6 +20,10 @@ fn_update() {
 	if [ -e /etc/TZ.apk-new ]; then
 		mv /etc/TZ.apk-new /etc/TZ
 	fi
+
+	if [ ! -e /usr/bin/ssl_client ]; then
+		apk add ssl_client
+	fi
 }
 
 fn_install() {
