@@ -35,7 +35,7 @@ acl archlinux-keyring attr bzip2 curl e2fsprogs expat glibc gpgme keyutils krb5 
   coreutils gmp libcap
   findutils
 )
-BASIC_PACKAGES=(${PACMAN_PACKAGES[*]} filesystem)
+BASIC_PACKAGES=(${PACMAN_PACKAGES[*]} brotli filesystem)
 EXTRA_PACKAGES=(bash coreutils findutils grep gawk file tar systemd sed)
 DEFAULT_REPO_URL="http://mirrors.kernel.org/archlinux"
 DEFAULT_ARM_REPO_URL="http://mirror.archlinuxarm.org"
