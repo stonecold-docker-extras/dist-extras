@@ -30,13 +30,13 @@ PACMAN_PACKAGES_OLD=(
   findutils
 )
 PACMAN_PACKAGES=(
-acl archlinux-keyring attr bzip2 curl e2fsprogs expat glibc gpgme keyutils krb5 libarchive libassuan libgpg-error libidn2 libnghttp2 libpsl libssh2 libunistring lz4 openssl pacman pacman-mirrorlist xz zlib zstd
+   acl archlinux-keyring attr brotli bzip2 curl e2fsprogs expat glibc gpgme keyutils krb5 libarchive libassuan libgpg-error libidn2 libnghttp3 libpsl libssh2 libunistring lz4 openssl pacman pacman-mirrorlist xz zlib zstd
   bash readline ncurses
   coreutils gmp libcap
   findutils
 )
-BASIC_PACKAGES=(${PACMAN_PACKAGES[*]} brotli filesystem)
-EXTRA_PACKAGES=(bash coreutils findutils grep gawk file tar systemd sed)
+BASIC_PACKAGES=(${PACMAN_PACKAGES[*]} filesystem)
+EXTRA_PACKAGES=(coreutils bash grep gawk file tar gzip systemd sed findutils )
 DEFAULT_REPO_URL="http://mirrors.kernel.org/archlinux"
 DEFAULT_ARM_REPO_URL="http://mirror.archlinuxarm.org"
 
