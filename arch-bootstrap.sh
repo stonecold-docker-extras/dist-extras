@@ -30,7 +30,7 @@ PACMAN_PACKAGES_OLD=(
   findutils
 )
 PACMAN_PACKAGES=(
-   acl archlinux-keyring attr brotli bzip2 curl e2fsprogs expat glibc gpgme keyutils krb5 libarchive libassuan libgpg-error libidn2 libnghttp3 libpsl libssh2 libunistring lz4 openssl pacman pacman-mirrorlist xz zlib zstd
+   acl archlinux-keyring attr brotli bzip2 curl e2fsprogs expat glibc gpgme keyutils krb5 libarchive libassuan libgpg-error libidn2 libnghttp2 libnghttp3 libpsl libssh2 libunistring lz4 openssl pacman pacman-mirrorlist xz zlib zstd
   bash readline ncurses
   coreutils gmp libcap
   findutils
