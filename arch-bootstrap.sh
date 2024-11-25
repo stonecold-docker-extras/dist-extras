@@ -35,7 +35,7 @@ PACMAN_PACKAGES=(
   coreutils gmp libcap
   findutils
   libxml2 icu gcc-libs
-  shadow libxcrypt pam audit libcap-ng
+  shadow libxcrypt pam audit libcap-ng sed
 )
 BASIC_PACKAGES=(${PACMAN_PACKAGES[*]} filesystem)
 EXTRA_PACKAGES=(coreutils bash grep gawk file tar gzip systemd sed findutils )
