@@ -2,7 +2,7 @@
 #
 # arch-bootstrap: Bootstrap a base Arch Linux system using any GNU distribution.
 #
-# Dependencies: bash >= 4, coreutils, wget, sed, gawk, tar, gzip, chroot, xz.
+# Dependencies: bash >= 4, coreutils, curl, sed, gawk, tar, gzip, chroot, xz, zstd.
 # Project: https://github.com/tokland/arch-bootstrap
 #
 # Install:
@@ -21,26 +21,19 @@
 set -e -u -o pipefail
 
 # Packages needed by pacman (see get-pacman-dependencies.sh)
-PACMAN_PACKAGES_OLD=(
-  acl archlinux-keyring attr bzip2 curl expat glibc gpgme libarchive
-  libassuan libgpg-error libnghttp2 libssh2 lzo openssl pacman pacman-mirrorlist xz zlib
-  krb5 e2fsprogs keyutils libidn2 libunistring gcc-libs lz4 libpsl icu libunistring zstd
-  bash readline ncurses
-  coreutils gmp libcap
-  findutils
-)
 PACMAN_PACKAGES=(
-   acl archlinux-keyring attr brotli bzip2 curl e2fsprogs expat glibc gpgme keyutils krb5 libarchive libassuan libgpg-error libidn2 libnghttp2 libnghttp3 libpsl libssh2 libunistring lz4 openssl pacman pacman-mirrorlist xz zlib zstd
-  bash readline ncurses
-  coreutils gmp libcap
-  findutils
-  libxml2 icu gcc-libs
-  shadow libxcrypt pam audit libcap-ng sed
+  acl archlinux-keyring attr brotli bzip2 curl expat glibc gpgme libarchive
+  libassuan libgpg-error libnghttp2 libnghttp3 libssh2 lzo openssl pacman pacman-mirrorlist xz zlib
+  krb5 e2fsprogs keyutils libidn2 libunistring gcc-libs lz4 libpsl icu libunistring zstd
+  libxml2
 )
+#BASIC_PACKAGES=(${PACMAN_PACKAGES[*]} filesystem base)
+#EXTRA_PACKAGES=(coreutils bash grep gawk file tar gzip systemd sed)
 BASIC_PACKAGES=(${PACMAN_PACKAGES[*]} filesystem)
-EXTRA_PACKAGES=(coreutils bash grep gawk file tar gzip systemd sed findutils )
+EXTRA_PACKAGES=(coreutils bash grep gawk file tar gzip systemd sed findutils)
 DEFAULT_REPO_URL="http://mirrors.kernel.org/archlinux"
 DEFAULT_ARM_REPO_URL="http://mirror.archlinuxarm.org"
+DEFAULT_X86_REPO_URL="http://mirror.archlinux32.org"
 
 stderr() { 
   echo "$@" >&2 
@@ -62,9 +55,9 @@ fetch_file() {
   local FILEPATH=$1
   shift
   if [[ -e "$FILEPATH" ]]; then
-    curl -L -s -z "$FILEPATH" -o "$FILEPATH" "$@"
+    curl -L -z "$FILEPATH" -o "$FILEPATH" "$@"
   else
-    curl -L -s -o "$FILEPATH" "$@"
+    curl -L -o "$FILEPATH" "$@"
   fi
 }
 
@@ -76,9 +69,9 @@ uncompress() {
       tar xzf "$FILEPATH" -C "$DEST";;
     *.xz) 
       xz -dc "$FILEPATH" | tar x -C "$DEST";;
-    *.zst) 
-      zstdcat "$FILEPATH" | tar x -C "$DEST";;
-    *) 
+    *.zst)
+      zstd -dc "$FILEPATH" | tar x -C "$DEST";;
+    *)
       debug "Error: unknown package format: $FILEPATH"
       return 1;;
   esac
@@ -90,6 +83,8 @@ get_default_repo() {
   local ARCH=$1
   if [[ "$ARCH" == arm* || "$ARCH" == aarch64 ]]; then
     echo $DEFAULT_ARM_REPO_URL
+  elif [[ "$ARCH" == i*86 || "$ARCH" == pentium4 ]]; then
+    echo $DEFAULT_X86_REPO_URL
   else
     echo $DEFAULT_REPO_URL
   fi
@@ -97,7 +92,7 @@ get_default_repo() {
 
 get_core_repo_url() {
   local REPO_URL=$1 ARCH=$2
-  if [[ "$ARCH" == arm* || "$ARCH" == aarch64 ]]; then
+  if [[ "$ARCH" == arm* || "$ARCH" == aarch64 || "$ARCH" == i*86 || "$ARCH" == pentium4 ]]; then
     echo "${REPO_URL%/}/$ARCH/core"
   else
     echo "${REPO_URL%/}/core/os/$ARCH"
@@ -106,7 +101,7 @@ get_core_repo_url() {
 
 get_template_repo_url() {
   local REPO_URL=$1 ARCH=$2
-  if [[ "$ARCH" == arm* || "$ARCH" == aarch64 ]]; then
+  if [[ "$ARCH" == arm* || "$ARCH" == aarch64 || "$ARCH" == i*86 || "$ARCH" == pentium4 ]]; then
     echo "${REPO_URL%/}/$ARCH/\$repo"
   else
     echo "${REPO_URL%/}/\$repo/os/$ARCH"
@@ -115,6 +110,9 @@ get_template_repo_url() {
 
 configure_pacman() {
   local DEST=$1 ARCH=$2
+  #LC_ALL=C chroot "$DEST" /usr/bin/pacman-key --init
+  #LC_ALL=C chroot "$DEST" /usr/bin/update-ca-trust
+  sed -i -e 's/DownloadUser = /#DownloadUser = /g' "$DEST/etc/pacman.conf"
   debug "configure DNS and pacman"
   cp "/etc/resolv.conf" "$DEST/etc/resolv.conf"
   SERVER=$(get_template_repo_url "$REPO_URL" "$ARCH")
@@ -131,9 +129,9 @@ configure_minimal_system() {
 
   rm -f "$DEST/etc/mtab"
   echo "rootfs / rootfs rw 0 0" > "$DEST/etc/mtab"
-  test -e "$DEST/dev/null" || mknod -m 0666 "$DEST/dev/null" c 1 3
-  test -e "$DEST/dev/random" || mknod -m 0666 "$DEST/dev/random" c 1 8
-  test -e "$DEST/dev/urandom" || mknod -m 0666 "$DEST/dev/urandom" c 1 9
+  test -e "$DEST/dev/null" || mknod "$DEST/dev/null" c 1 3
+  test -e "$DEST/dev/random" || mknod -m 0644 "$DEST/dev/random" c 1 8
+  test -e "$DEST/dev/urandom" || mknod -m 0644 "$DEST/dev/urandom" c 1 9
 
   sed -i "s/^[[:space:]]*\(CheckSpace\)/# \1/" "$DEST/etc/pacman.conf"
   sed -i "s/^[[:space:]]*SigLevel[[:space:]]*=.*$/SigLevel = Never/" "$DEST/etc/pacman.conf"
@@ -152,7 +150,7 @@ install_pacman_packages() {
   debug "pacman package and dependencies: $BASIC_PACKAGES"
   
   for PACKAGE in $BASIC_PACKAGES; do
-    local FILE=$(echo "$LIST" | grep -m1 "^$PACKAGE-[[:digit:]].*\(\.gz\|\.xz\|.zst\)$")
+    local FILE=$(echo "$LIST" | grep -m1 "^$PACKAGE-[[:digit:]].*\(\.gz\|\.xz\|\.zst\)$")
     test "$FILE" || { debug "Error: cannot find package: $PACKAGE"; return 1; }
     local FILEPATH="$DOWNLOAD_DIR/$FILE"
     
@@ -176,11 +174,11 @@ install_packages() {
   local ARCH=$1 DEST=$2 PACKAGES=$3
   debug "install packages: $PACKAGES"
   LC_ALL=C chroot "$DEST" /usr/bin/pacman \
-    --noconfirm --arch $ARCH -Sy --overwrite "*" $PACKAGES
+    --noconfirm --arch $ARCH -Sy --overwrite \* $PACKAGES
 }
 
 show_usage() {
-  stderr "Usage: $(basename "$0") [-q] [-a i686|x86_64|arm] [-r REPO_URL] [-d DOWNLOAD_DIR] DESTDIR"
+  stderr "Usage: $(basename "$0") [-q] [-a i486|i686|pentium4|x86_64|arm|aarch64] [-r REPO_URL] [-d DOWNLOAD_DIR] DESTDIR"
 }
 
 main() {
@@ -224,8 +222,8 @@ main() {
   configure_pacman "$DEST" "$ARCH"
   configure_minimal_system "$DEST"
   [[ -n "$USE_QEMU" ]] && configure_static_qemu "$ARCH" "$DEST"
-  #install_packages "$ARCH" "$DEST" "${BASIC_PACKAGES[*]} ${EXTRA_PACKAGES[*]}"
-  #configure_pacman "$DEST" "$ARCH" # Pacman must be re-configured
+  install_packages "$ARCH" "$DEST" "${BASIC_PACKAGES[*]} ${EXTRA_PACKAGES[*]}"
+  configure_pacman "$DEST" "$ARCH" # Pacman must be re-configured
   [[ -z "$PRESERVE_DOWNLOAD_DIR" ]] && rm -rf "$DOWNLOAD_DIR"
   
   debug "Done!"
