@@ -25,7 +25,7 @@ PACMAN_PACKAGES=(
   acl archlinux-keyring attr brotli bzip2 curl expat glibc gpgme libarchive
   libassuan libgpg-error libnghttp2 libnghttp3 libssh2 lzo openssl pacman pacman-mirrorlist xz zlib
   krb5 e2fsprogs keyutils libidn2 libunistring gcc-libs lz4 libpsl icu libunistring zstd
-  libxml2
+  libxml2 libseccomp
 )
 #BASIC_PACKAGES=(${PACMAN_PACKAGES[*]} filesystem base)
 #EXTRA_PACKAGES=(coreutils bash grep gawk file tar gzip systemd sed)
@@ -112,7 +112,6 @@ configure_pacman() {
   local DEST=$1 ARCH=$2
   #LC_ALL=C chroot "$DEST" /usr/bin/pacman-key --init
   #LC_ALL=C chroot "$DEST" /usr/bin/update-ca-trust
-  sed -i -e 's/DownloadUser = /#DownloadUser = /g' "$DEST/etc/pacman.conf"
   debug "configure DNS and pacman"
   cp "/etc/resolv.conf" "$DEST/etc/resolv.conf"
   SERVER=$(get_template_repo_url "$REPO_URL" "$ARCH")
@@ -133,6 +132,7 @@ configure_minimal_system() {
   test -e "$DEST/dev/random" || mknod -m 0644 "$DEST/dev/random" c 1 8
   test -e "$DEST/dev/urandom" || mknod -m 0644 "$DEST/dev/urandom" c 1 9
 
+  sed -i 's/^DownloadUser/#DownloadUser/' "$DEST/etc/pacman.conf"
   sed -i "s/^[[:space:]]*\(CheckSpace\)/# \1/" "$DEST/etc/pacman.conf"
   sed -i "s/^[[:space:]]*SigLevel[[:space:]]*=.*$/SigLevel = Never/" "$DEST/etc/pacman.conf"
 }
