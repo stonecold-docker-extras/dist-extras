@@ -25,7 +25,7 @@ PACMAN_PACKAGES=(
   acl archlinux-keyring attr brotli bzip2 curl expat glibc gpgme libarchive
   libassuan libgpg-error libnghttp2 libnghttp3 libssh2 lzo openssl pacman pacman-mirrorlist xz zlib
   krb5 e2fsprogs keyutils libidn2 libunistring gcc-libs lz4 libpsl icu zstd
-  libxml2 libseccomp libngtcp2 libgcc libstdc++
+  libxml2 libseccomp libngtcp2 libgcc libstdc%2B%2B
 )
 #BASIC_PACKAGES=(${PACMAN_PACKAGES[*]} filesystem base)
 #EXTRA_PACKAGES=(coreutils bash grep gawk file tar gzip systemd sed)
@@ -34,6 +34,21 @@ EXTRA_PACKAGES=(coreutils bash grep gawk file tar gzip systemd sed findutils)
 DEFAULT_REPO_URL="http://mirrors.kernel.org/archlinux"
 DEFAULT_ARM_REPO_URL="http://mirror.archlinuxarm.org"
 DEFAULT_X86_REPO_URL="http://mirror.archlinux32.org"
+
+urlencode() {
+  local s="$1"
+  local encoded=""
+  local c
+  for (( i=0; i<${#s}; i++ )); do
+    c=${s:$i:1}
+    case "$c" in
+      [a-zA-Z0-9.~_-]) encoded+="$c" ;;
+      *) printf -v hex '%%%02X' "'$c"
+         encoded+="$hex"
+    esac
+  done
+  echo "$encoded"
+}
 
 stderr() { 
   echo "$@" >&2 
@@ -149,7 +164,8 @@ install_pacman_packages() {
   local BASIC_PACKAGES=$1 DEST=$2 LIST=$3 DOWNLOAD_DIR=$4
   debug "pacman package and dependencies: $BASIC_PACKAGES"
   
-  for PACKAGE in $BASIC_PACKAGES; do
+  for PACKAGE_ORG in $BASIC_PACKAGES; do
+    local PACKAGE="$(urlencode "${PACKAGE_ORG}")"
     local FILE=$(echo "$LIST" | grep -m1 "^$PACKAGE-[[:digit:]].*\(\.gz\|\.xz\|\.zst\)$")
     test "$FILE" || { debug "Error: cannot find package: $PACKAGE"; return 1; }
     local FILEPATH="$DOWNLOAD_DIR/$FILE"
